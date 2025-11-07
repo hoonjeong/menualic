@@ -1,0 +1,149 @@
+flowchart TD
+    Start([팀 관리 메뉴 선택]) --> CheckRole{사용자 권한}
+    
+    CheckRole -->|소유자| OwnerMenu[팀 관리 대시보드]
+    CheckRole -->|편집자/뷰어| NoPermission[권한 없음 안내<br/>소유자만 접근 가능]
+    NoPermission --> End([대시보드로 돌아가기])
+    
+    %% 소유자 팀 관리 메뉴
+    OwnerMenu --> ManageMenu{관리 메뉴}
+    
+    %% 1. 팀원 초대
+    ManageMenu -->|팀원 초대| InviteMethod{초대 방식 선택}
+    
+    InviteMethod -->|이메일 초대| EmailInvite[이메일 초대]
+    EmailInvite --> EnterEmail[이메일 주소 입력]
+    EnterEmail --> MultiEmail{여러 명 초대?}
+    MultiEmail -->|예| AddMoreEmail[이메일 추가]
+    MultiEmail -->|아니오| SelectRole1[초대할 권한 선택]
+    AddMoreEmail --> SelectRole1
+    
+    SelectRole1 --> RoleOption1{권한}
+    RoleOption1 -->|편집자| EditorInvite[편집자 권한으로 초대]
+    RoleOption1 -->|뷰어| ViewerInvite[뷰어 권한으로 초대]
+    
+    EditorInvite --> SendEmail[초대 이메일 발송]
+    ViewerInvite --> SendEmail
+    SendEmail --> InviteSuccess1[초대 완료 알림]
+    InviteSuccess1 --> OwnerMenu
+    
+    InviteMethod -->|링크 초대| LinkInvite[초대 링크 생성]
+    LinkInvite --> SelectRole2[권한 선택]
+    SelectRole2 --> RoleOption2{권한}
+    RoleOption2 -->|편집자| EditorLink[편집자 링크 생성]
+    RoleOption2 -->|뷰어| ViewerLink[뷰어 링크 생성]
+    
+    EditorLink --> SetExpiry{유효기간 설정}
+    ViewerLink --> SetExpiry
+    SetExpiry -->|기간 설정| ExpiryDate[만료일 선택]
+    SetExpiry -->|무제한| NoExpiry[기간 제한 없음]
+    
+    ExpiryDate --> GenerateLink[링크 생성]
+    NoExpiry --> GenerateLink
+    GenerateLink --> CopyLink[링크 복사]
+    CopyLink --> InviteSuccess2[링크 준비 완료]
+    InviteSuccess2 --> OwnerMenu
+    
+    %% 2. 팀원 관리
+    ManageMenu -->|팀원 관리| MemberList[팀원 목록]
+    MemberList --> MemberInfo[팀원 정보<br/>이름/이메일/권한]
+    MemberInfo --> MemberAction{액션 선택}
+    
+    MemberAction -->|권한 변경| ChangePermission[권한 수정]
+    ChangePermission --> SelectNewRole{새 권한}
+    SelectNewRole -->|편집자로 변경| ToEditor[편집자 권한 부여]
+    SelectNewRole -->|뷰어로 변경| ToViewer[뷰어 권한으로 변경]
+    SelectNewRole -->|소유자로 변경| ToOwner[소유자 권한 이전<br/>신중한 결정 필요]
+    
+    ToEditor --> ConfirmChange1{변경 확인}
+    ToViewer --> ConfirmChange1
+    ToOwner --> OwnerWarning[경고 메시지<br/>소유자는 1명만 가능]
+    OwnerWarning --> ConfirmOwnerChange{정말 변경?}
+    
+    ConfirmOwnerChange -->|확인| TransferOwnership[소유권 이전<br/>나는 편집자로 변경]
+    ConfirmOwnerChange -->|취소| MemberList
+    TransferOwnership --> OwnershipSuccess[소유권 이전 완료]
+    OwnershipSuccess --> End
+    
+    ConfirmChange1 -->|확인| UpdateRole[권한 업데이트]
+    ConfirmChange1 -->|취소| MemberList
+    UpdateRole --> RoleChangeSuccess[권한 변경 완료<br/>팀원에게 알림]
+    RoleChangeSuccess --> MemberList
+    
+    MemberAction -->|팀원 내보내기| RemoveMember{내보내기 확인}
+    RemoveMember -->|확인| KickMember[팀에서 제외]
+    RemoveMember -->|취소| MemberList
+    KickMember --> RemoveAccess[접근 권한 삭제]
+    RemoveAccess --> RemoveSuccess[내보내기 완료]
+    RemoveSuccess --> MemberList
+    
+    MemberAction -->|초대 재발송| ResendInvite[초대 메일 재전송]
+    ResendInvite --> MemberList
+    
+    %% 3. 팀 정보 수정
+    ManageMenu -->|팀 정보| TeamInfo[팀 정보 페이지]
+    TeamInfo --> TeamSettings{설정 항목}
+    
+    TeamSettings -->|팀명 변경| ChangeTeamName[팀 이름 수정]
+    ChangeTeamName --> InputTeamName[새 이름 입력]
+    InputTeamName --> SaveTeamName[저장]
+    SaveTeamName --> TeamInfo
+    
+    TeamSettings -->|팀 설명| ChangeDescription[팀 설명 수정]
+    ChangeDescription --> InputDescription[설명 입력]
+    InputDescription --> SaveDescription[저장]
+    SaveDescription --> TeamInfo
+    
+    TeamSettings -->|팀 아이콘| ChangeIcon[팀 아이콘 변경]
+    ChangeIcon --> UploadIcon[이미지 업로드]
+    UploadIcon --> SaveIcon[저장]
+    SaveIcon --> TeamInfo
+    
+    %% 4. 팀 삭제
+    ManageMenu -->|팀 삭제| DeleteTeam{정말 삭제?}
+    DeleteTeam -->|취소| OwnerMenu
+    DeleteTeam -->|확인| WarningDelete[경고 메시지<br/>모든 메뉴얼 삭제됨]
+    WarningDelete --> FinalConfirm{최종 확인<br/>팀명 입력}
+    FinalConfirm -->|일치| ExecuteDelete[팀 삭제 실행]
+    FinalConfirm -->|불일치| OwnerMenu
+    ExecuteDelete --> DeleteAllData[모든 데이터 삭제]
+    DeleteAllData --> DeleteComplete[팀 삭제 완료]
+    DeleteComplete --> Redirect([홈으로 이동<br/>팀 생성 유도])
+    
+    %% 팀원 초대 수락 흐름 (별도)
+    InviteReceived([초대받은 사용자]) --> ReceiveInvite{초대 방식}
+    
+    ReceiveInvite -->|이메일| OpenEmail[이메일 확인]
+    OpenEmail --> ClickInviteLink[초대 링크 클릭]
+    
+    ReceiveInvite -->|공유 링크| ClickLink[링크 접속]
+    ClickInviteLink --> CheckAccount{계정 존재?}
+    ClickLink --> CheckAccount
+    
+    CheckAccount -->|있음| Login[로그인]
+    CheckAccount -->|없음| Signup[회원가입]
+    
+    Login --> CheckTeamStatus{팀 소속?}
+    Signup --> CheckTeamStatus
+    
+    CheckTeamStatus -->|이미 다른 팀| AlreadyInTeam[이미 팀 소속<br/>초대 거절]
+    CheckTeamStatus -->|팀 없음| AcceptInvite[초대 수락]
+    
+    AlreadyInTeam --> InviteRejected([초대 거절됨<br/>기존 팀 유지])
+    
+    AcceptInvite --> AssignRole[권한 부여]
+    AssignRole --> JoinSuccess[팀 가입 완료<br/>환영 메시지]
+    JoinSuccess --> TeamDashboard([팀 대시보드로 이동])
+    
+    %% 스타일
+    classDef owner fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px
+    classDef member fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef warning fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef danger fill:#ffebee,stroke:#c62828,stroke-width:3px
+    classDef success fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+    
+    class OwnerMenu,ManageMenu,ChangePermission owner
+    class MemberList,InviteMethod,TeamInfo member
+    class WarningDelete,OwnerWarning,AlreadyInTeam warning
+    class DeleteTeam,FinalConfirm,ExecuteDelete danger
+    class InviteSuccess1,InviteSuccess2,JoinSuccess,RoleChangeSuccess success

@@ -1,0 +1,169 @@
+flowchart TD
+    Start([메뉴얼 편집 화면 진입]) --> EditorLayout[편집기 레이아웃]
+    
+    %% 편집기 구성
+    EditorLayout --> LeftSidebar[좌측 사이드바<br/>메뉴얼 목록]
+    EditorLayout --> MainEditor[중앙 편집 영역]
+    EditorLayout --> RightPanel[우측 설정 패널]
+    
+    %% 좌측 사이드바 - 계층 구조
+    LeftSidebar --> StructureTree[계층 구조 트리]
+    StructureTree --> StructureAction{액션 선택}
+    
+    StructureAction -->|대제목 추가| AddMainSection[대제목 생성]
+    StructureAction -->|소제목 추가| SelectParent[상위 섹션 선택]
+    StructureAction -->|하위 영역 추가| AddSubSection[하위 섹션 생성]
+    StructureAction -->|섹션 선택| LoadSection[해당 섹션 로드]
+    StructureAction -->|드래그로 순서 변경| ReorderSection[계층 재배치]
+    
+    SelectParent --> AddSubSection
+    AddMainSection --> InputTitle[제목 입력]
+    AddSubSection --> InputTitle
+    InputTitle --> SaveSection[섹션 저장]
+    SaveSection --> StructureTree
+    
+    ReorderSection --> ConfirmReorder{변경 확인}
+    ConfirmReorder -->|확인| UpdateStructure[구조 업데이트]
+    ConfirmReorder -->|취소| StructureTree
+    UpdateStructure --> AutoSave1[자동 저장]
+    AutoSave1 --> StructureTree
+    
+    LoadSection --> MainEditor
+    
+    %% 중앙 편집 영역 - 콘텐츠 작성
+    MainEditor --> EditorToolbar[편집 도구 바]
+    EditorToolbar --> ContentArea[콘텐츠 영역<br/>블록 기반]
+    
+    ContentArea --> AddBlock{블록 추가}
+    
+    %% 텍스트 블록
+    AddBlock -->|텍스트 블록| TextBlock[텍스트 편집 블록]
+    TextBlock --> TextEditor[리치 텍스트 에디터]
+    TextEditor --> TextFormat{서식 적용}
+    TextFormat -->|제목| HeadingFormat[H1/H2/H3 선택]
+    TextFormat -->|강조| BoldItalic[굵게/기울임]
+    TextFormat -->|목록| ListFormat[순서/비순서 목록]
+    TextFormat -->|링크| LinkAdd[링크 삽입]
+    
+    HeadingFormat --> TextComplete[텍스트 블록 완성]
+    BoldItalic --> TextComplete
+    ListFormat --> TextComplete
+    LinkAdd --> TextComplete
+    TextComplete --> ContentArea
+    
+    %% 이미지 블록
+    AddBlock -->|이미지 블록| ImageBlock[이미지 추가]
+    ImageBlock --> ImageUpload{업로드 방식}
+    ImageUpload -->|파일 선택| FileSelect[파일 선택 대화상자]
+    ImageUpload -->|드래그앤드롭| DragImage[이미지 드롭 영역]
+    ImageUpload -->|URL 입력| ImageURL[이미지 URL 입력]
+    
+    FileSelect --> ImagePreview[이미지 미리보기]
+    DragImage --> ImagePreview
+    ImageURL --> ImagePreview
+    ImagePreview --> ImageSettings[이미지 설정]
+    ImageSettings --> ImageOption{옵션}
+    ImageOption -->|크기 조정| ResizeImage[크기 변경]
+    ImageOption -->|정렬| AlignImage[좌/중앙/우 정렬]
+    ImageOption -->|캡션| AddCaption[설명 추가]
+    
+    ResizeImage --> ImageComplete[이미지 블록 완성]
+    AlignImage --> ImageComplete
+    AddCaption --> ImageComplete
+    ImageComplete --> ContentArea
+    
+    %% 블록 배치 및 순서 변경
+    ContentArea --> BlockAction{블록 액션}
+    BlockAction -->|드래그 이동| DragBlock[블록 드래그]
+    BlockAction -->|복사| CopyBlock[블록 복사]
+    BlockAction -->|삭제| DeleteBlock{삭제 확인}
+    BlockAction -->|편집| EditBlock[블록 수정]
+    
+    DragBlock --> DropPosition[드롭 위치 표시]
+    DropPosition --> DropBlock{위치 확정}
+    DropBlock -->|드롭| BlockReordered[블록 재배치 완료]
+    DropBlock -->|취소| ContentArea
+    BlockReordered --> AutoSave2[자동 저장]
+    AutoSave2 --> ContentArea
+    
+    CopyBlock --> PasteBlock[붙여넣기 위치 선택]
+    PasteBlock --> ContentArea
+    
+    DeleteBlock -->|확인| RemoveBlock[블록 삭제]
+    DeleteBlock -->|취소| ContentArea
+    RemoveBlock --> AutoSave3[자동 저장]
+    AutoSave3 --> ContentArea
+    
+    EditBlock --> TextBlock
+    EditBlock --> ImageBlock
+    
+    %% 우측 설정 패널
+    RightPanel --> PanelMenu{설정 메뉴}
+    
+    %% 메뉴얼 설정
+    PanelMenu -->|메뉴얼 설정| ManualSettings[메뉴얼 속성]
+    ManualSettings --> SettingOption{설정 항목}
+    SettingOption -->|제목 변경| ChangeTitle[메뉴얼 제목 수정]
+    SettingOption -->|설명 추가| AddDescription[메뉴얼 설명 입력]
+    SettingOption -->|커버 이미지| SetCover[커버 이미지 설정]
+    
+    ChangeTitle --> SaveSettings[설정 저장]
+    AddDescription --> SaveSettings
+    SetCover --> SaveSettings
+    SaveSettings --> RightPanel
+    
+    %% 공유 설정
+    PanelMenu -->|공유 설정| ShareSettings[공유 옵션]
+    ShareSettings --> ShareType{공유 방식}
+    ShareType -->|팀 내부| TeamPermission[팀원 권한 설정]
+    ShareType -->|외부 링크| ExternalLink[공유 링크 생성]
+    
+    TeamPermission --> SelectMember[팀원 선택]
+    SelectMember --> AssignRole{역할 지정}
+    AssignRole -->|편집자| EditorRole[편집 권한 부여]
+    AssignRole -->|뷰어| ViewerRole[읽기 권한 부여]
+    EditorRole --> ShareComplete[공유 완료]
+    ViewerRole --> ShareComplete
+    
+    ExternalLink --> LinkOption{링크 옵션}
+    LinkOption -->|제목만 공개| TitleOnly[제목만 보기 링크]
+    LinkOption -->|전체 공개| FullAccess[전체 보기 링크]
+    TitleOnly --> CopyLink[링크 복사]
+    FullAccess --> CopyLink
+    CopyLink --> ShareComplete
+    ShareComplete --> RightPanel
+    
+    %% 버전 관리
+    PanelMenu -->|버전 이력| VersionHistory[수정 이력]
+    VersionHistory --> VersionList[버전 목록<br/>시간/작성자]
+    VersionList --> VersionAction{액션}
+    VersionAction -->|이력 비교| CompareVersion[버전 비교 보기]
+    VersionAction -->|되돌리기| ConfirmRestore{복원 확인}
+    
+    CompareVersion --> VersionList
+    ConfirmRestore -->|확인| RestoreVersion[이전 버전 복원]
+    ConfirmRestore -->|취소| VersionList
+    RestoreVersion --> RestoreSuccess[복원 완료 알림]
+    RestoreSuccess --> MainEditor
+    
+    %% 자동 저장 및 나가기
+    ContentArea --> AutoSaveTimer[5초마다<br/>자동 저장]
+    AutoSaveTimer --> SaveStatus[저장 상태 표시]
+    SaveStatus --> ContentArea
+    
+    MainEditor --> ExitEditor{편집 종료}
+    ExitEditor -->|저장 후 나가기| FinalSave[최종 저장]
+    ExitEditor -->|취소| MainEditor
+    FinalSave --> CreateVersion[버전 생성]
+    CreateVersion --> ExitSuccess([대시보드로 이동])
+    
+    %% 스타일
+    classDef primary fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef content fill:#f1f8e9,stroke:#689f38,stroke-width:2px
+    classDef action fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef save fill:#ffebee,stroke:#c62828,stroke-width:3px
+    
+    class MainEditor,ContentArea,TextBlock,ImageBlock primary
+    class AddBlock,BlockAction,DragBlock content
+    class AutoSave1,AutoSave2,AutoSave3,AutoSaveTimer,FinalSave save
+    class EditorToolbar,RightPanel,LeftSidebar action

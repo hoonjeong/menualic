@@ -1,0 +1,304 @@
+// Menualic - Manual Creation Service Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  // Password reset
+  resetToken    String?
+  resetTokenExpiry DateTime?
+
+  // Relations
+  teamMemberships  TeamMember[]
+  ownedTeams       Team[]           @relation("TeamOwner")
+  ownedManuals     Manual[]         @relation("ManualOwner")
+  manualShares     ManualShare[]
+  versions         ManualVersion[]
+  invitationsSent  Invitation[]     @relation("InvitationSender")
+  invitationsReceived Invitation[]  @relation("InvitationReceiver")
+  notifications    Notification[]
+  uploadedFiles    File[]
+
+  @@index([email])
+  @@index([resetToken])
+}
+
+// 팀
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ownerId     String
+  owner       User     @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  members     TeamMember[]
+  manuals     Manual[]
+  invitations Invitation[]
+
+  @@index([ownerId])
+}
+
+// 팀원 관계
+model TeamMember {
+  id        String   @id @default(cuid())
+  role      Role     @default(VIEWER)
+  joinedAt  DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+// 팀 초대
+model Invitation {
+  id          String          @id @default(cuid())
+  email       String
+  role        Role            @default(VIEWER)
+  token       String          @unique
+  expiresAt   DateTime?
+  status      InvitationStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+
+  teamId      String
+  team        Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  senderId    String
+  sender      User            @relation("InvitationSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId  String?
+  receiver    User?           @relation("InvitationReceiver", fields: [receiverId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([token])
+  @@index([teamId])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+// 메뉴얼
+model Manual {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  coverImage  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teamId      String
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  ownerId     String
+  owner       User     @relation("ManualOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  sections    ManualSection[]
+  shares      ManualShare[]
+  versions    ManualVersion[]
+  externalLinks ExternalShareLink[]
+  files       File[]
+
+  @@index([teamId])
+  @@index([ownerId])
+  @@index([updatedAt])
+}
+
+// 메뉴얼 섹션 (계층 구조)
+model ManualSection {
+  id          String   @id @default(cuid())
+  title       String
+  order       Int
+  depth       Int      @default(1) // 1, 2, 3
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  manualId    String
+  manual      Manual   @relation(fields: [manualId], references: [id], onDelete: Cascade)
+
+  parentId    String?
+  parent      ManualSection?  @relation("SectionHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children    ManualSection[] @relation("SectionHierarchy")
+
+  // Relations
+  blocks      ContentBlock[]
+
+  @@index([manualId])
+  @@index([parentId])
+  @@index([order])
+}
+
+// 콘텐츠 블록
+model ContentBlock {
+  id          String      @id @default(cuid())
+  type        BlockType
+  content     String @db.Text // JSON 형태로 저장
+  order       Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  sectionId   String
+  section     ManualSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@index([sectionId])
+  @@index([order])
+}
+
+enum BlockType {
+  HEADING1
+  HEADING2
+  HEADING3
+  BODY
+  IMAGE
+  VIDEO
+  TABLE
+  DIVIDER
+  CODE
+}
+
+// 메뉴얼 공유 (팀 내부)
+model ManualShare {
+  id          String     @id @default(cuid())
+  permission  Permission @default(VIEWER)
+  sharedAt    DateTime   @default(now())
+
+  manualId    String
+  manual      Manual     @relation(fields: [manualId], references: [id], onDelete: Cascade)
+
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([manualId, userId])
+  @@index([manualId])
+  @@index([userId])
+}
+
+enum Permission {
+  EDITOR
+  VIEWER
+}
+
+// 외부 공유 링크
+model ExternalShareLink {
+  id          String     @id @default(cuid())
+  token       String     @unique
+  accessType  AccessType @default(TITLE_ONLY)
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  expiresAt   DateTime?
+
+  manualId    String
+  manual      Manual     @relation(fields: [manualId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([manualId])
+}
+
+enum AccessType {
+  TITLE_ONLY
+  FULL_ACCESS
+}
+
+// 메뉴얼 버전
+model ManualVersion {
+  id          String   @id @default(cuid())
+  content     String @db.LongText // 전체 메뉴얼 스냅샷 (JSON)
+  summary     String?  // 변경 요약
+  createdAt   DateTime @default(now())
+
+  manualId    String
+  manual      Manual   @relation(fields: [manualId], references: [id], onDelete: Cascade)
+
+  createdBy   String
+  creator     User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([manualId])
+  @@index([createdAt])
+}
+
+// 알림
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  relatedId   String? // 관련된 엔티티 ID (manualId, teamId 등)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([isRead])
+}
+
+enum NotificationType {
+  MANUAL_SHARED
+  MANUAL_UPDATED
+  TEAM_INVITATION
+  PERMISSION_CHANGED
+  MEMBER_JOINED
+  MEMBER_LEFT
+}
+
+// 업로드된 파일
+model File {
+  id              String   @id @default(cuid())
+  filename        String   // 원본 파일명
+  storedFilename  String   // 서버에 저장된 파일명 (UUID)
+  mimeType        String
+  size            Int      // 바이트 단위
+  path            String   // 파일 경로
+  width           Int?     // 이미지인 경우 너비
+  height          Int?     // 이미지인 경우 높이
+  createdAt       DateTime @default(now())
+
+  uploadedBy      String
+  uploader        User     @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  manualId        String?
+  manual          Manual?  @relation(fields: [manualId], references: [id], onDelete: SetNull)
+
+  @@index([uploadedBy])
+  @@index([manualId])
+  @@index([createdAt])
+}

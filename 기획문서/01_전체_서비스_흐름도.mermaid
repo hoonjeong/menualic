@@ -1,0 +1,110 @@
+flowchart TD
+    Start([서비스 접속]) --> CheckLogin{로그인 상태?}
+    
+    %% 비회원 흐름
+    CheckLogin -->|비회원| GuestView[공유 메뉴얼 제목만 보기]
+    GuestView --> GuestAction{액션 선택}
+    GuestAction -->|회원가입| Signup[회원가입 페이지]
+    GuestAction -->|다른 메뉴얼 보기| GuestView
+    
+    %% 회원 가입 흐름
+    Signup --> SignupForm[정보 입력]
+    SignupForm --> CheckInvite{초대 링크로<br/>가입?}
+    CheckInvite -->|예| JoinTeam[팀 자동 가입]
+    CheckInvite -->|아니오| CreateOrJoin{팀 생성 or<br/>초대 대기}
+    
+    %% 팀 생성 흐름
+    CreateOrJoin -->|팀 생성| CreateTeam[팀 생성 페이지]
+    CreateTeam --> TeamInfo[팀명 입력]
+    TeamInfo --> TeamOwner[소유자 권한으로<br/>대시보드 이동]
+    
+    %% 기존 회원 로그인
+    CheckLogin -->|회원| HasTeam{팀 소속?}
+    HasTeam -->|아니오| CreateOrJoin
+    HasTeam -->|예| Dashboard[대시보드<br/>좌측 사이드바]
+    JoinTeam --> Dashboard
+    TeamOwner --> Dashboard
+    
+    %% 대시보드 메인 기능
+    Dashboard --> MainMenu{메뉴 선택}
+    
+    %% 메뉴얼 관리
+    MainMenu -->|메뉴얼 목록| ManualList[메뉴얼 목록<br/>사이드바]
+    ManualList --> ManualAction{액션}
+    ManualAction -->|새 메뉴얼 작성| CreateManual[메뉴얼 생성]
+    ManualAction -->|기존 메뉴얼 선택| CheckPermission{권한 확인}
+    
+    CheckPermission -->|소유자/편집자| EditManual[메뉴얼 편집 화면]
+    CheckPermission -->|뷰어| ViewManual[메뉴얼 읽기 전용]
+    
+    %% 메뉴얼 작성 상세
+    CreateManual --> EditManual
+    EditManual --> EditorFeatures[편집 기능]
+    EditorFeatures --> AddSection[섹션 추가<br/>대제목/소제목]
+    EditorFeatures --> AddContent[콘텐츠 추가<br/>텍스트/이미지]
+    EditorFeatures --> DragDrop[드래그앤드롭<br/>순서 변경]
+    EditorFeatures --> AutoSave[자동 저장]
+    
+    AddSection --> EditManual
+    AddContent --> EditManual
+    DragDrop --> EditManual
+    AutoSave --> VersionSave[버전 이력 저장]
+    
+    %% 메뉴얼 공유
+    EditManual --> ShareMenu{공유 옵션}
+    ViewManual --> ShareMenu
+    ShareMenu -->|팀 내 공유| TeamShare[팀원 권한 설정]
+    ShareMenu -->|외부 공유| ExternalShare[공유 링크 생성]
+    
+    TeamShare --> Dashboard
+    ExternalShare --> Dashboard
+    
+    %% 팀 관리
+    MainMenu -->|팀 관리| TeamManage{권한 확인}
+    TeamManage -->|소유자만| TeamSettings[팀 설정]
+    TeamManage -->|권한 없음| PermissionDenied[접근 불가 안내]
+    
+    TeamSettings --> InviteMember[팀원 초대<br/>이메일/링크]
+    TeamSettings --> ManagePermission[권한 관리<br/>소유자/편집자/뷰어]
+    TeamSettings --> TeamInfo2[팀 정보 수정]
+    
+    InviteMember --> Dashboard
+    ManagePermission --> Dashboard
+    TeamInfo2 --> Dashboard
+    PermissionDenied --> Dashboard
+    
+    %% 마이페이지
+    MainMenu -->|마이페이지| MyPage[내 정보 관리]
+    MyPage --> MyPageAction{설정}
+    MyPageAction -->|프로필 수정| EditProfile[정보 수정]
+    MyPageAction -->|알림 설정| NotificationSettings[알림 환경설정]
+    MyPageAction -->|로그아웃| Logout[로그아웃]
+    
+    EditProfile --> Dashboard
+    NotificationSettings --> Dashboard
+    Logout --> Start
+    
+    %% 버전 관리
+    ViewManual --> VersionMenu[버전 이력 보기]
+    VersionMenu --> VersionAction{액션}
+    VersionAction -->|이력 확인| VersionList[수정 이력 목록]
+    VersionAction -->|되돌리기| RestoreVersion{권한 확인}
+    
+    RestoreVersion -->|편집 권한 있음| ConfirmRestore[되돌리기 확인]
+    RestoreVersion -->|권한 없음| PermissionDenied
+    ConfirmRestore -->|확인| RestoreComplete[이전 버전으로 복원]
+    ConfirmRestore -->|취소| ViewManual
+    
+    VersionList --> ViewManual
+    RestoreComplete --> EditManual
+    
+    %% 스타일
+    classDef userAction fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
+    classDef systemAction fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef decision fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef critical fill:#ffebee,stroke:#c62828,stroke-width:2px
+    
+    class Start,Signup,CreateTeam,EditManual,CreateManual userAction
+    class Dashboard,ManualList,EditProfile systemAction
+    class CheckLogin,HasTeam,CheckInvite,ManualAction,CheckPermission,TeamManage,RestoreVersion decision
+    class AutoSave,VersionSave,RestoreComplete critical
