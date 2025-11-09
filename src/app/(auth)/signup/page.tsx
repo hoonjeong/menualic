@@ -128,118 +128,108 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-900 relative overflow-hidden flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Background effects */}
-      <div className="absolute inset-0 bg-dark-mesh opacity-40"></div>
-      <div className="absolute top-20 -left-20 w-96 h-96 bg-accent-purple/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 -right-20 w-96 h-96 bg-accent-blue/10 rounded-full blur-3xl"></div>
-
-      <div className="max-w-md w-full space-y-8 relative z-10">
-        <div className="text-center">
-          <Link href="/" className="inline-flex items-center justify-center space-x-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent-purple to-accent-blue rounded-xl shadow-neon-purple flex items-center justify-center">
-              <div className="w-7 h-7 bg-dark-900 rounded-md"></div>
-            </div>
-            <h1 className="text-3xl font-bold text-gradient">Menualic</h1>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <Link href="/" className="flex items-center justify-center space-x-2">
+            <div className="w-10 h-10 bg-primary-600 rounded-lg"></div>
+            <h1 className="text-3xl font-bold text-gray-900">Menualic</h1>
           </Link>
-          <h2 className="mt-2 text-center text-3xl font-bold text-white">
+          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             {invitationToken ? '초대받은 팀에 가입하기' : '회원가입'}
           </h2>
-          <p className="mt-3 text-center text-sm text-dark-300">
+          <p className="mt-2 text-center text-sm text-gray-600">
             이미 계정이 있으신가요?{' '}
-            <Link href="/login" className="font-medium text-accent-purple-light hover:text-accent-purple transition-colors">
+            <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
               로그인하기
             </Link>
           </p>
         </div>
 
-        <div className="card-glow p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-5">
-              <Input
-                label="이메일"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={formData.email}
-                onChange={handleChange}
-                error={errors.email}
-                placeholder="이메일 주소를 입력하세요"
-              />
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <Input
+              label="이메일"
+              name="email"
+              type="email"
+              autoComplete="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="이메일 주소를 입력하세요"
+            />
 
-              <Input
-                label="비밀번호"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                value={formData.password}
-                onChange={handleChange}
-                error={errors.password}
-                placeholder="최소 8자, 영문+숫자 조합"
-              />
+            <Input
+              label="비밀번호"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="최소 8자, 영문+숫자 조합"
+            />
 
-              <Input
-                label="비밀번호 확인"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                error={errors.confirmPassword}
-                placeholder="비밀번호를 다시 입력하세요"
-              />
+            <Input
+              label="비밀번호 확인"
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+              placeholder="비밀번호를 다시 입력하세요"
+            />
 
-              <Input
-                label="이름"
-                name="name"
-                type="text"
-                autoComplete="name"
-                value={formData.name}
-                onChange={handleChange}
-                error={errors.name}
-                placeholder="이름을 입력하세요"
+            <Input
+              label="이름"
+              name="name"
+              type="text"
+              autoComplete="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="이름을 입력하세요"
+            />
+          </div>
+
+          <div>
+            <div className="flex items-start">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => {
+                  setAgreedToTerms(e.target.checked)
+                  if (errors.terms) {
+                    setErrors(prev => {
+                      const newErrors = { ...prev }
+                      delete newErrors.terms
+                      return newErrors
+                    })
+                  }
+                }}
+                className="h-4 w-4 mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
+              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+                <span className="font-medium">이용약관</span> 및{' '}
+                <span className="font-medium">개인정보처리방침</span>에 동의합니다 (필수)
+              </label>
             </div>
+            {errors.terms && (
+              <p className="mt-1 text-sm text-red-600">{errors.terms}</p>
+            )}
+          </div>
 
-            <div>
-              <div className="flex items-start">
-                <input
-                  id="terms"
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => {
-                    setAgreedToTerms(e.target.checked)
-                    if (errors.terms) {
-                      setErrors(prev => {
-                        const newErrors = { ...prev }
-                        delete newErrors.terms
-                        return newErrors
-                      })
-                    }
-                  }}
-                  className="h-4 w-4 mt-1 rounded border-dark-600 bg-dark-800/50 text-accent-purple focus:ring-accent-purple focus:ring-offset-dark-900"
-                />
-                <label htmlFor="terms" className="ml-3 block text-sm text-dark-200">
-                  <span className="font-medium text-white">이용약관</span> 및{' '}
-                  <span className="font-medium text-white">개인정보처리방침</span>에 동의합니다 (필수)
-                </label>
-              </div>
-              {errors.terms && (
-                <p className="mt-1.5 text-sm text-red-400">{errors.terms}</p>
-              )}
-            </div>
-
-            <Button
-              type="submit"
-              variant="gradient"
-              className="w-full"
-              size="lg"
-              isLoading={isLoading}
-            >
-              가입하기
-            </Button>
-          </form>
-        </div>
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            isLoading={isLoading}
+          >
+            가입하기
+          </Button>
+        </form>
       </div>
     </div>
   )
