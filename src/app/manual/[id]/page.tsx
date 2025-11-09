@@ -831,28 +831,49 @@ export default function ManualPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-4 flex-shrink-0">
+        <div className="px-2 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => router.push('/dashboard')}
+              className="hidden sm:flex"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               대시보드
             </Button>
+            {/* Mobile: Show menu toggle button */}
+            <button
+              onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+              className="sm:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{manual.title}</h1>
-              <p className="text-sm text-gray-500">{manual.team.name}</p>
+              <h1 className="text-base sm:text-xl font-bold text-gray-900 truncate max-w-[150px] sm:max-w-none">{manual.title}</h1>
+              <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">{manual.team.name}</p>
             </div>
           </div>
-          <div className="hidden md:block flex-1 max-w-md">
+          <div className="hidden lg:block flex-1 max-w-md">
             <SearchBar />
           </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
+          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+            {/* Mobile: Settings toggle button */}
+            <button
+              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+              className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              aria-label="Toggle settings"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </button>
+            <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600 hidden sm:inline">
               {permission === 'OWNER' ? '소유자' : permission === 'EDITOR' ? '편집자' : '뷰어'}
             </span>
             {canEdit && (
@@ -888,10 +909,19 @@ export default function ManualPage() {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-57px)]">
+      <div className="flex h-[calc(100vh-57px)] relative">
         {/* Sidebar - Section Tree */}
+        {/* Mobile: Overlay sidebar */}
+        {isLeftSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+            onClick={() => setIsLeftSidebarOpen(false)}
+          />
+        )}
         <aside className={`bg-white border-r border-gray-200 overflow-y-auto transition-all duration-300 ${
-          isLeftSidebarOpen ? 'w-64' : 'w-0'
+          isLeftSidebarOpen ? 'w-64' : 'w-0 md:w-0'
+        } md:relative fixed inset-y-0 left-0 z-30 md:z-auto ${
+          isLeftSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}>
           <div className={`p-4 ${isLeftSidebarOpen ? '' : 'hidden'}`}>
             <div className="flex items-center justify-between mb-3">
@@ -927,10 +957,10 @@ export default function ManualPage() {
           </div>
         </aside>
 
-        {/* Left Sidebar Toggle Button */}
+        {/* Left Sidebar Toggle Button - Desktop only */}
         <button
           onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-          className="flex-shrink-0 w-4 bg-gray-100 hover:bg-gray-200 border-r border-gray-200 transition-colors flex items-center justify-center"
+          className="hidden md:flex flex-shrink-0 w-4 bg-gray-100 hover:bg-gray-200 border-r border-gray-200 transition-colors items-center justify-center"
           title={isLeftSidebarOpen ? '목차 접기' : '목차 펼치기'}
         >
           <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -946,8 +976,8 @@ export default function ManualPage() {
         <main className="flex-1 overflow-y-auto">
           {selectedSection ? (
             <>
-              <div className="max-w-4xl mx-auto px-8 pt-6 pb-2">
-                <h2 className="text-3xl font-bold text-gray-900">
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-2">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
                   {selectedSection.title}
                 </h2>
               </div>
@@ -982,10 +1012,10 @@ export default function ManualPage() {
           )}
         </main>
 
-        {/* Right Sidebar Toggle Button */}
+        {/* Right Sidebar Toggle Button - Desktop only */}
         <button
           onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-          className="flex-shrink-0 w-4 bg-gray-100 hover:bg-gray-200 border-l border-gray-200 transition-colors flex items-center justify-center"
+          className="hidden lg:flex flex-shrink-0 w-4 bg-gray-100 hover:bg-gray-200 border-l border-gray-200 transition-colors items-center justify-center"
           title={isRightSidebarOpen ? '설정 접기' : '설정 펼치기'}
         >
           <svg className="w-3 h-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -998,8 +1028,17 @@ export default function ManualPage() {
         </button>
 
         {/* Right Panel - Settings/Share */}
+        {/* Mobile: Overlay sidebar */}
+        {isRightSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            onClick={() => setIsRightSidebarOpen(false)}
+          />
+        )}
         <aside className={`bg-white border-l border-gray-200 overflow-y-auto transition-all duration-300 ${
-          isRightSidebarOpen ? 'w-80' : 'w-0'
+          isRightSidebarOpen ? 'w-80' : 'w-0 lg:w-0'
+        } lg:relative fixed inset-y-0 right-0 z-30 lg:z-auto ${
+          isRightSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         }`}>
           <div className={`p-4 ${isRightSidebarOpen ? '' : 'hidden'}`}>
             <h3 className="text-sm font-semibold text-gray-700 mb-4">설정</h3>
