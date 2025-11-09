@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import SearchBar from '@/components/ui/SearchBar'
 
 interface Team {
   id: string
@@ -154,12 +155,8 @@ export default function DashboardPage() {
               <div className="w-8 h-8 bg-primary-600 rounded-lg"></div>
               <h1 className="text-xl font-bold text-gray-900">Menualic</h1>
             </div>
-            <div className="hidden md:block">
-              <input
-                type="text"
-                placeholder="메뉴얼 검색..."
-                className="w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
+            <div className="hidden md:block w-96">
+              <SearchBar />
             </div>
           </div>
           <div className="flex items-center space-x-4">

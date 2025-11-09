@@ -138,6 +138,7 @@ model Manual {
   @@index([teamId])
   @@index([ownerId])
   @@index([updatedAt])
+  @@index([title])
 }
 
 // 메뉴얼 섹션 (계층 구조)
@@ -162,6 +163,7 @@ model ManualSection {
   @@index([manualId])
   @@index([parentId])
   @@index([order])
+  @@index([title])
 }
 
 // 콘텐츠 블록

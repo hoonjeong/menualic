@@ -84,34 +84,6 @@ export async function POST(
       )
     }
 
-    // Save current state as a new version before restoring
-    const currentSnapshot = {
-      title: manual.title,
-      description: manual.description,
-      sections: manual.sections.map((section) => ({
-        id: section.id,
-        title: section.title,
-        order: section.order,
-        depth: section.depth,
-        parentId: section.parentId,
-        blocks: section.blocks.map((block) => ({
-          id: block.id,
-          type: block.type,
-          content: block.content,
-          order: block.order,
-        })),
-      })),
-    }
-
-    await prisma.manualVersion.create({
-      data: {
-        manualId: id,
-        createdBy: session.user.id,
-        content: JSON.stringify(currentSnapshot),
-        summary: '복원 전 자동 백업',
-      },
-    })
-
     // Restore version in transaction
     await prisma.$transaction(async (tx) => {
       // Delete all current sections and blocks (cascade will handle blocks)

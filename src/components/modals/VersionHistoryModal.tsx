@@ -17,7 +17,7 @@ interface VersionHistoryModalProps {
   manualId: string
   manualTitle: string
   canEdit: boolean
-  onRestore?: () => void
+  onRestore?: () => void | Promise<void>
 }
 
 export default function VersionHistoryModal({
@@ -98,10 +98,12 @@ export default function VersionHistoryModal({
         throw new Error(data.error || '버전 복원에 실패했습니다')
       }
 
-      alert('버전이 복원되었습니다. 페이지를 새로고침합니다.')
-      onRestore?.()
+      alert('버전이 복원되었습니다.')
+      await fetchVersions()
+      if (onRestore) {
+        await onRestore()
+      }
       onClose()
-      window.location.reload()
     } catch (error) {
       alert(error instanceof Error ? error.message : '버전 복원에 실패했습니다')
     } finally {

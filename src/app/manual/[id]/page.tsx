@@ -2,11 +2,12 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import BlockEditor from '@/components/editor/BlockEditor'
 import ShareSettingsModal from '@/components/modals/ShareSettingsModal'
 import VersionHistoryModal from '@/components/modals/VersionHistoryModal'
+import SearchBar from '@/components/ui/SearchBar'
 import {
   DndContext,
   closestCenter,
@@ -69,7 +70,9 @@ export default function ManualPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const manualId = params.id as string
+  const sectionIdFromUrl = searchParams.get('section')
 
   const [manual, setManual] = useState<Manual | null>(null)
   const [permission, setPermission] = useState<string>('')
@@ -153,6 +156,14 @@ export default function ManualPage() {
         const updatedSection = findSectionInTree(data.manual.sections, selectedSection.id)
         if (updatedSection) {
           setSelectedSection(updatedSection)
+        } else if (data.manual.sections.length > 0) {
+          setSelectedSection(data.manual.sections[0])
+        }
+      } else if (sectionIdFromUrl) {
+        // If section ID is in URL, select that section
+        const sectionFromUrl = findSectionInTree(data.manual.sections, sectionIdFromUrl)
+        if (sectionFromUrl) {
+          setSelectedSection(sectionFromUrl)
         } else if (data.manual.sections.length > 0) {
           setSelectedSection(data.manual.sections[0])
         }
@@ -820,8 +831,8 @@ export default function ManualPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
@@ -837,7 +848,10 @@ export default function ManualPage() {
               <p className="text-sm text-gray-500">{manual.team.name}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="hidden md:block flex-1 max-w-md">
+            <SearchBar />
+          </div>
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <span className="text-xs px-2 py-1 bg-gray-100 rounded text-gray-600">
               {permission === 'OWNER' ? '소유자' : permission === 'EDITOR' ? '편집자' : '뷰어'}
             </span>
@@ -1103,7 +1117,7 @@ export default function ManualPage() {
             manualId={manual.id}
             manualTitle={manual.title}
             canEdit={canEdit}
-            onRestore={() => fetchManual()}
+            onRestore={async () => await fetchManual()}
           />
         </>
       )}
