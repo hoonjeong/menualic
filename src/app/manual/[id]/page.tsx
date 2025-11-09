@@ -93,8 +93,8 @@ export default function ManualPage() {
   const [newBlockId, setNewBlockId] = useState<string | null>(null)
   const [deletedBlocksHistory, setDeletedBlocksHistory] = useState<DeletedBlockHistory[]>([])
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true)
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false)
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -106,6 +106,22 @@ export default function ManualPage() {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  // Set initial sidebar state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 768 // md breakpoint
+      setIsLeftSidebarOpen(isDesktop)
+      setIsRightSidebarOpen(isDesktop)
+    }
+
+    // Set initial state
+    handleResize()
+
+    // Listen for window resize
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
