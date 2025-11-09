@@ -132,10 +132,10 @@ export default function DashboardPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">로딩 중...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-purple mx-auto"></div>
+          <p className="mt-4 text-dark-300">로딩 중...</p>
         </div>
       </div>
     )
@@ -146,64 +146,64 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dark-900">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg"></div>
-              <h1 className="text-xl font-bold text-gray-900">Menualic</h1>
+      <header className="glass border-b border-dark-700 sticky top-0 z-40 backdrop-blur-xl bg-dark-900/80">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent-purple to-accent-blue rounded-lg shadow-glow-sm"></div>
+              <h1 className="text-xl font-bold text-gradient">Menualic</h1>
             </div>
             <div className="hidden md:block w-96">
               <SearchBar />
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-center space-x-3">
+            <button className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+              <svg className="w-6 h-6 text-dark-300 hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                className="flex items-center space-x-2 hover:bg-white/5 rounded-xl px-3 py-2 transition-colors"
               >
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-600">
+                <div className="w-8 h-8 bg-gradient-to-br from-accent-purple to-accent-blue rounded-full flex items-center justify-center">
+                  <span className="text-sm font-semibold text-white">
                     {session?.user?.name?.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span className="text-sm font-medium text-gray-700">{session?.user?.name}</span>
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <span className="text-sm font-medium text-white">{session?.user?.name}</span>
+                <svg className="w-4 h-4 text-dark-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
               {showUserMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 glass rounded-xl border border-dark-700 py-2 z-50 shadow-glass">
                   <button
                     onClick={() => {
                       setShowUserMenu(false)
                       router.push('/profile')
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                    className="w-full text-left px-4 py-2.5 text-sm text-dark-200 hover:bg-white/5 hover:text-white flex items-center transition-colors"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     내 정보 보기
                   </button>
-                  <div className="border-t border-gray-200 my-1" />
+                  <div className="border-t border-dark-700 my-2" />
                   <button
                     onClick={() => {
                       setShowUserMenu(false)
                       signOut({ callbackUrl: '/login' })
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                    className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center transition-colors"
                   >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     로그아웃
@@ -215,18 +215,18 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-57px)]">
+      <div className="flex h-[calc(100vh-73px)]">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
-          <div className="p-4">
+        <aside className="w-72 bg-dark-800/30 border-r border-dark-700 overflow-y-auto backdrop-blur-sm">
+          <div className="p-5">
             {/* Team Info */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase">팀</h2>
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-dark-400 uppercase tracking-wider">팀</h2>
                 {role === 'OWNER' && (
                   <button
                     onClick={() => router.push('/team/settings')}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-dark-400 hover:text-accent-purple transition-colors"
                     title="팀 설정"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,13 +236,13 @@ export default function DashboardPage() {
                   </button>
                 )}
               </div>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <h3 className="font-semibold text-gray-900">{team.name}</h3>
+              <div className="glass rounded-xl p-4 border border-dark-700">
+                <h3 className="font-semibold text-white">{team.name}</h3>
                 {team.description && (
-                  <p className="text-sm text-gray-600 mt-1">{team.description}</p>
+                  <p className="text-sm text-dark-300 mt-1">{team.description}</p>
                 )}
-                <div className="mt-2 flex items-center text-xs text-gray-500">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mt-3 flex items-center text-xs text-dark-400">
+                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                   {team.members.length}명
@@ -252,12 +252,12 @@ export default function DashboardPage() {
 
             {/* Manual List */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase">메뉴얼</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold text-dark-400 uppercase tracking-wider">메뉴얼</h2>
                 {(role === 'OWNER' || role === 'EDITOR') && (
                   <button
                     onClick={handleCreateManual}
-                    className="text-primary-600 hover:text-primary-700"
+                    className="text-accent-purple hover:text-accent-purple-light transition-colors"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -267,15 +267,15 @@ export default function DashboardPage() {
               </div>
 
               {team.manuals.length === 0 ? (
-                <div className="text-center py-8">
-                  <svg className="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center py-12">
+                  <svg className="w-12 h-12 text-dark-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <p className="text-sm text-gray-500">메뉴얼이 없습니다</p>
+                  <p className="text-sm text-dark-400 mb-3">메뉴얼이 없습니다</p>
                   {(role === 'OWNER' || role === 'EDITOR') && (
                     <button
                       onClick={handleCreateManual}
-                      className="mt-2 text-sm text-primary-600 hover:text-primary-700"
+                      className="text-sm text-accent-purple hover:text-accent-purple-light transition-colors font-medium"
                     >
                       첫 메뉴얼 만들기
                     </button>
@@ -286,14 +286,14 @@ export default function DashboardPage() {
                   {team.manuals.map((manual) => (
                     <div
                       key={manual.id}
-                      className="group relative flex items-center rounded-lg hover:bg-gray-100 transition-colors"
+                      className="group relative flex items-center rounded-xl hover:bg-white/5 transition-all duration-200"
                     >
                       <button
                         onClick={() => router.push(`/manual/${manual.id}`)}
-                        className="flex-1 text-left px-3 py-2"
+                        className="flex-1 text-left px-3 py-3"
                       >
-                        <div className="text-sm font-medium text-gray-900">{manual.title}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">
+                        <div className="text-sm font-medium text-white group-hover:text-accent-purple-light transition-colors">{manual.title}</div>
+                        <div className="text-xs text-dark-400 mt-0.5">
                           {new Date(manual.updatedAt).toLocaleDateString('ko-KR')}
                         </div>
                       </button>
@@ -303,10 +303,10 @@ export default function DashboardPage() {
                             e.stopPropagation()
                             handleEditManual(manual.id, manual.title)
                           }}
-                          className="absolute right-2 p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-200 rounded transition-opacity"
+                          className="absolute right-2 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-lg transition-all"
                           title="제목 수정"
                         >
-                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-dark-400 hover:text-accent-purple transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
@@ -320,25 +320,25 @@ export default function DashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-8">
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <main className="flex-1 overflow-y-auto bg-dark-900">
+          <div className="max-w-4xl mx-auto p-12">
+            <div className="card-glow p-12 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-accent-purple/20 to-accent-blue/20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-glow-md">
+                <svg className="w-10 h-10 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {team.name}에 오신 것을 환영합니다!
+              <h2 className="text-3xl font-bold text-white mb-3">
+                <span className="text-gradient">{team.name}</span>에 오신 것을 환영합니다!
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-dark-300 mb-8 text-lg">
                 {role === 'OWNER' || role === 'EDITOR'
-                  ? '새로운 메뉴얼을 만들어보세요.'
-                  : '공유된 메뉴얼을 확인해보세요.'}
+                  ? '새로운 메뉴얼을 만들어 팀과 지식을 공유해보세요.'
+                  : '공유된 메뉴얼을 확인하고 학습해보세요.'}
               </p>
 
               {(role === 'OWNER' || role === 'EDITOR') && (
-                <Button size="lg" onClick={handleCreateManual}>
+                <Button variant="gradient" size="lg" onClick={handleCreateManual}>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
@@ -346,22 +346,22 @@ export default function DashboardPage() {
                 </Button>
               )}
 
-              <div className="mt-8 pt-8 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">팀 멤버</h3>
+              <div className="mt-10 pt-10 border-t border-dark-700">
+                <h3 className="text-sm font-semibold text-dark-400 mb-5 uppercase tracking-wider">팀 멤버 ({team.members.length})</h3>
                 <div className="flex flex-wrap gap-3 justify-center">
                   {team.members.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center space-x-2 bg-gray-50 px-3 py-2 rounded-lg"
+                      className="glass flex items-center space-x-3 px-4 py-3 rounded-xl border border-dark-700 hover:border-accent-purple/30 transition-all"
                     >
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium text-gray-600">
+                      <div className="w-10 h-10 bg-gradient-to-br from-accent-purple to-accent-blue rounded-full flex items-center justify-center shadow-glow-sm">
+                        <span className="text-sm font-semibold text-white">
                           {member.user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="text-left">
-                        <div className="text-sm font-medium text-gray-900">{member.user.name}</div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-sm font-medium text-white">{member.user.name}</div>
+                        <div className="text-xs text-dark-400">
                           {member.role === 'OWNER' ? '소유자' : member.role === 'EDITOR' ? '편집자' : '뷰어'}
                         </div>
                       </div>

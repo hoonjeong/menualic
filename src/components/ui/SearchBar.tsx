@@ -139,10 +139,10 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => setIsFocused(true)}
             placeholder="검색... (Ctrl+K)"
-            className="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+            className="w-full px-4 py-2.5 pl-10 pr-4 border border-dark-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-purple focus:border-accent-purple/50 bg-dark-800/50 backdrop-blur-sm text-white placeholder:text-dark-400 hover:border-dark-600 transition-all"
           />
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-dark-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -156,7 +156,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
           </svg>
           {isLoading && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent-purple"></div>
             </div>
           )}
         </div>
@@ -166,40 +166,40 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
       {isFocused && (query.trim().length > 0 || quickResults.length > 0) && (
         <div
           ref={dropdownRef}
-          className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50"
+          className="absolute top-full mt-2 w-full glass rounded-xl border border-dark-700 shadow-glass max-h-96 overflow-y-auto z-50"
         >
           {quickResults.length > 0 ? (
             <>
-              <div className="px-3 py-2 border-b border-gray-100">
-                <p className="text-xs text-gray-500 font-medium">빠른 검색</p>
+              <div className="px-4 py-3 border-b border-dark-700">
+                <p className="text-xs text-dark-400 font-semibold uppercase tracking-wider">빠른 검색</p>
               </div>
-              <div className="py-1">
+              <div className="py-1.5">
                 {quickResults.map((result) => (
                   <button
                     key={`${result.type}-${result.id}`}
                     onClick={() => handleResultClick(result)}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors group"
                   >
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-3">
                       {result.type === 'manual' ? (
-                        <svg className="w-5 h-5 mt-0.5 text-primary-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 mt-0.5 text-accent-purple flex-shrink-0 group-hover:text-accent-purple-light transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       ) : (
-                        <svg className="w-5 h-5 mt-0.5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 mt-0.5 text-accent-blue flex-shrink-0 group-hover:text-accent-blue-light transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-white truncate group-hover:text-accent-purple-light transition-colors">
                           {result.title}
                         </p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs px-2 py-0.5 bg-dark-700/50 text-dark-300 rounded-md border border-dark-600">
                             {result.type === 'manual' ? '매뉴얼' : '섹션'}
                           </span>
                           {result.teamName && (
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-dark-400">
                               {result.teamName}
                             </span>
                           )}
@@ -209,10 +209,10 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
                   </button>
                 ))}
               </div>
-              <div className="px-3 py-2 border-t border-gray-100">
+              <div className="px-4 py-3 border-t border-dark-700">
                 <button
                   onClick={handleSubmit}
-                  className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center"
+                  className="text-xs text-accent-purple hover:text-accent-purple-light font-medium flex items-center transition-colors"
                 >
                   모든 결과 보기
                   <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,7 +223,7 @@ export default function SearchBar({ className = '' }: SearchBarProps) {
             </>
           ) : query.trim().length > 0 && !isLoading ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-sm text-gray-500">검색 결과가 없습니다</p>
+              <p className="text-sm text-dark-400">검색 결과가 없습니다</p>
             </div>
           ) : null}
         </div>
