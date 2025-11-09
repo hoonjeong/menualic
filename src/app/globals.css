@@ -18,3 +18,97 @@
     text-wrap: balance;
   }
 }
+
+/* Print Styles */
+@media print {
+  /* Hide navigation, sidebars, and buttons */
+  header,
+  aside,
+  button:not(.print-keep) {
+    display: none !important;
+  }
+
+  /* Remove background colors for better printing */
+  body,
+  main {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Ensure main content takes full width */
+  main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Remove shadows and borders for cleaner look */
+  * {
+    box-shadow: none !important;
+    border-color: #e5e7eb !important;
+  }
+
+  /* Keep heading styles but adjust for print */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    color: black !important;
+  }
+
+  /* Avoid breaking blocks across pages */
+  div[data-block-id] {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure images fit on page */
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Table styles for print */
+  table {
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  table td,
+  table th {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+  }
+
+  /* Add page breaks before major sections */
+  section {
+    page-break-before: auto;
+  }
+
+  /* Remove hover effects and transitions */
+  *:hover {
+    background: transparent !important;
+  }
+
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Ensure links are visible */
+  a {
+    text-decoration: underline !important;
+    color: #0066cc !important;
+  }
+
+  /* Show URL after links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  /* But don't show URL for anchor links */
+  a[href^="#"]:after {
+    content: "";
+  }
+}
