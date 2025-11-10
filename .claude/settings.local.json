@@ -16,7 +16,9 @@
       "Bash(dir /s /b \"C:\\Users\\hoonj\\project\\menualic\\src\")",
       "Bash(nul)",
       "Bash(dir /s /b C:Usershoonjprojectmenualic*.log C:Usershoonjprojectmenualic*.tmp 2)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout /t 5 /nobreak)"
     ],
     "deny": [],
     "ask": []

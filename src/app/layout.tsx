@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import { Suspense } from 'react'
 import SessionProvider from '@/components/providers/SessionProvider'
 import SessionManager from '@/components/SessionManager'
 import InactivityLogout from '@/components/InactivityLogout'
@@ -22,8 +23,10 @@ export default function RootLayout({
     <html lang="ko">
       <body className={inter.className}>
         <SessionProvider>
-          <SessionManager />
-          <InactivityLogout />
+          <Suspense fallback={null}>
+            <SessionManager />
+            <InactivityLogout />
+          </Suspense>
           {children}
         </SessionProvider>
         <Toaster position="top-right" />
