@@ -990,6 +990,19 @@ export default function ManualPage() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
+          {/* Print-only header */}
+          <header className="print-header hidden print:block mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{manual.title}</h1>
+            {manual.description && (
+              <p className="text-gray-600 mb-4">{manual.description}</p>
+            )}
+            <div className="text-sm text-gray-500 border-b pb-4">
+              <div>팀: {manual.team.name}</div>
+              <div>작성자: {manual.owner.name}</div>
+              <div>최종 수정: {new Date(manual.updatedAt).toLocaleString('ko-KR')}</div>
+            </div>
+          </header>
+
           {selectedSection ? (
             <>
               <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-4 sm:pt-6 pb-2">

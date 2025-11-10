@@ -18,7 +18,13 @@
       "Bash(dir /s /b C:Usershoonjprojectmenualic*.log C:Usershoonjprojectmenualic*.tmp 2)",
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
-      "Bash(timeout /t 5 /nobreak)"
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(ping:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(cmd /c taskkill /F /PID 7184)",
+      "Bash(powershell -Command \"Stop-Process -Id 7184 -Force\")"
     ],
     "deny": [],
     "ask": []

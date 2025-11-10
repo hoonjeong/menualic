@@ -21,10 +21,16 @@
 
 /* Print Styles */
 @media print {
+  /* Show print-only elements */
+  .print-header {
+    display: block !important;
+  }
+
   /* Hide navigation, sidebars, and buttons */
-  header,
+  header:not(.print-header),
   aside,
-  button:not(.print-keep) {
+  button:not(.print-keep),
+  nav {
     display: none !important;
   }
 
@@ -35,11 +41,11 @@
     color: black !important;
   }
 
-  /* Ensure main content takes full width */
+  /* Ensure main content takes full width with proper margins */
   main {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0 !important;
+    padding: 20mm !important;
     margin: 0 !important;
     overflow: visible !important;
   }
