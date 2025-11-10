@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import SessionProvider from '@/components/providers/SessionProvider'
+import SessionManager from '@/components/SessionManager'
+import InactivityLogout from '@/components/InactivityLogout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +22,8 @@ export default function RootLayout({
     <html lang="ko">
       <body className={inter.className}>
         <SessionProvider>
+          <SessionManager />
+          <InactivityLogout />
           {children}
         </SessionProvider>
         <Toaster position="top-right" />

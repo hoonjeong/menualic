@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
@@ -56,7 +56,7 @@ interface SearchResults {
   blocks: Block[]
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -348,10 +348,9 @@ export default function SearchPage() {
                               {getBlockTypeLabel(block.type)}
                             </span>
                             <div className="flex-1 min-w-0">
-                              <div
-                                className="text-sm text-gray-700 mb-2 line-clamp-3"
-                                dangerouslySetInnerHTML={{ __html: block.preview }}
-                              />
+                              <div className="text-sm text-gray-700 mb-2 line-clamp-3">
+                                {block.preview}
+                              </div>
                               <div className="flex items-center gap-3 text-xs text-gray-500">
                                 <span className="flex items-center">
                                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -402,5 +401,20 @@ export default function SearchPage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">검색 중...</p>
+        </div>
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   )
 }

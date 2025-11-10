@@ -13,7 +13,10 @@
       "Bash(npx prisma migrate:*)",
       "Bash(git checkout:*)",
       "Bash(git restore:*)",
-      "Bash(dir /s /b \"C:\\Users\\hoonj\\project\\menualic\\src\")"
+      "Bash(dir /s /b \"C:\\Users\\hoonj\\project\\menualic\\src\")",
+      "Bash(nul)",
+      "Bash(dir /s /b C:Usershoonjprojectmenualic*.log C:Usershoonjprojectmenualic*.tmp 2)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

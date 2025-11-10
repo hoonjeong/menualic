@@ -205,10 +205,10 @@ export default function SharedManualPage() {
                 <BlockEditor
                   blocks={selectedSection.blocks}
                   canEdit={false}
-                  onUpdateBlock={() => {}}
-                  onDeleteBlock={() => {}}
-                  onReorderBlocks={() => {}}
-                  onAddBlock={() => {}}
+                  onUpdateBlock={async () => {}}
+                  onDeleteBlock={async () => {}}
+                  onReorderBlocks={async () => {}}
+                  onAddBlock={async () => {}}
                 />
               ) : (
                 <div className="max-w-4xl mx-auto px-8 py-8">

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import toast from 'react-hot-toast'
+import { setRememberMe, setSavedEmail, getSavedEmail } from '@/lib/auth-utils'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -15,8 +16,19 @@ export default function LoginPage() {
     email: '',
     password: '',
   })
+  const [rememberMeChecked, setRememberMeChecked] = useState(false)
+  const [saveEmailChecked, setSaveEmailChecked] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
+
+  // 컴포넌트 마운트 시 저장된 이메일 불러오기
+  useEffect(() => {
+    const savedEmail = getSavedEmail()
+    if (savedEmail) {
+      setFormData(prev => ({ ...prev, email: savedEmail }))
+      setSaveEmailChecked(true)
+    }
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -52,6 +64,12 @@ export default function LoginPage() {
       if (result?.error) {
         toast.error(result.error || '로그인에 실패했습니다')
       } else if (result?.ok) {
+        // 이메일 저장 처리
+        setSavedEmail(saveEmailChecked ? formData.email : null)
+
+        // 로그인 상태 유지 처리
+        setRememberMe(rememberMeChecked)
+
         toast.success('로그인 성공!')
         router.push('/dashboard')
         router.refresh()
@@ -120,6 +138,36 @@ export default function LoginPage() {
               error={errors.password}
               placeholder="비밀번호를 입력하세요"
             />
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center">
+              <input
+                id="rememberMe"
+                name="rememberMe"
+                type="checkbox"
+                checked={rememberMeChecked}
+                onChange={(e) => setRememberMeChecked(e.target.checked)}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+              />
+              <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700 cursor-pointer">
+                로그인 상태 유지 (30일)
+              </label>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                id="saveEmail"
+                name="saveEmail"
+                type="checkbox"
+                checked={saveEmailChecked}
+                onChange={(e) => setSaveEmailChecked(e.target.checked)}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer"
+              />
+              <label htmlFor="saveEmail" className="ml-2 block text-sm text-gray-700 cursor-pointer">
+                이메일 저장
+              </label>
+            </div>
           </div>
 
           <div className="flex items-center justify-between">

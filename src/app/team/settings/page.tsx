@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { handleLogout } from '@/lib/auth-utils'
 
 interface TeamMember {
   id: string
@@ -308,7 +309,7 @@ export default function TeamSettingsPage() {
                   <button
                     onClick={() => {
                       setShowUserMenu(false)
-                      signOut({ callbackUrl: '/login' })
+                      handleLogout()
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
                   >

@@ -6,6 +6,10 @@ import bcrypt from 'bcryptjs'
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
+    // JWT 토큰 만료 시간: 30일
+    // 클라이언트 측 SessionManager가 rememberMe 옵션에 따라
+    // 브라우저 종료 시 자동 로그아웃을 처리함
+    maxAge: 30 * 24 * 60 * 60, // 30일 (초 단위)
   },
   pages: {
     signIn: '/login',

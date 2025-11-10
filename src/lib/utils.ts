@@ -20,7 +20,9 @@ export function generateSecureToken(bytes: number = 32): string {
  * @deprecated Use generateSecureToken() instead. This function is not cryptographically secure.
  */
 export function generateToken(): string {
-  console.warn('generateToken() is deprecated. Use generateSecureToken() instead.')
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('[Deprecated] generateToken() is deprecated. Use generateSecureToken() instead.')
+  }
   return generateSecureToken(16)
 }
 
