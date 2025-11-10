@@ -17,7 +17,7 @@ export default function HomePage() {
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-accent-purple to-accent-blue rounded-xl shadow-neon-purple flex items-center justify-center">
               <div className="w-5 h-5 sm:w-6 sm:h-6 bg-dark-900 rounded-md"></div>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gradient">Menualic</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Menualic</h1>
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Link
@@ -46,7 +46,7 @@ export default function HomePage() {
           <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 sm:mb-8 leading-tight px-4">
             <span className="text-white">팀 협업을 위한</span>
             <br />
-            <span className="text-gradient text-glow">메뉴얼 작성 플랫폼</span>
+            <span className="text-white font-bold">메뉴얼 작성 플랫폼</span>
           </h2>
 
           <p className="text-base sm:text-lg md:text-xl text-dark-200 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
@@ -74,15 +74,15 @@ export default function HomePage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 sm:gap-6 md:gap-8 max-w-2xl mx-auto mt-12 sm:mt-20 px-4">
             <div className="glass rounded-lg sm:rounded-xl p-3 sm:p-6">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1 sm:mb-2">100+</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">100+</div>
               <div className="text-dark-300 text-xs sm:text-sm">활성 팀</div>
             </div>
             <div className="glass rounded-lg sm:rounded-xl p-3 sm:p-6">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1 sm:mb-2">5,000+</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">5,000+</div>
               <div className="text-dark-300 text-xs sm:text-sm">생성된 메뉴얼</div>
             </div>
             <div className="glass rounded-lg sm:rounded-xl p-3 sm:p-6">
-              <div className="text-2xl sm:text-3xl font-bold text-gradient mb-1 sm:mb-2">99.9%</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">99.9%</div>
               <div className="text-dark-300 text-xs sm:text-sm">가동 시간</div>
             </div>
           </div>
