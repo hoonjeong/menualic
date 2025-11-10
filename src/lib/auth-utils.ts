@@ -43,8 +43,11 @@ export function setRememberMe(rememberMe: boolean): void {
 
   if (rememberMe) {
     localStorage.setItem('loginTime', Date.now().toString())
-    sessionStorage.setItem('sessionActive', 'true')
   }
+
+  // rememberMe 여부와 관계없이 현재 세션 활성화 표시
+  // SessionManager가 즉시 로그아웃하지 않도록 함
+  sessionStorage.setItem('sessionActive', 'true')
 }
 
 /**
