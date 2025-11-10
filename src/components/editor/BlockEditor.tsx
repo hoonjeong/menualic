@@ -117,7 +117,7 @@ export default function BlockEditor({
               items={blocks.map((b) => b.id)}
               strategy={verticalListSortingStrategy}
             >
-              <div className="space-y-0.5">
+              <div className="space-y-4">
                 {blocks.map((block) => (
                   <SortableBlock
                     key={block.id}
