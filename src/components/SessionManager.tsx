@@ -2,21 +2,43 @@
 
 import { useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { handleLogout, getRememberMe } from '@/lib/auth-utils'
+
+// 세션 체크를 하지 않을 공개 경로 목록
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/signup',
+  '/share',
+]
 
 /**
  * 세션 관리 컴포넌트
  * - 로그인 상태 유지 옵션에 따라 세션을 관리
  * - rememberMe가 false면 브라우저 종료 시 로그아웃되도록 처리
+ * - 공개 페이지에서는 세션 체크를 하지 않음
  */
 export default function SessionManager() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     // 인증되지 않은 상태면 체크 불필요
     if (status !== 'authenticated') {
+      return
+    }
+
+    // 공개 경로인 경우 세션 체크를 하지 않음
+    const isPublicRoute = PUBLIC_ROUTES.some(route => {
+      if (route === '/') {
+        return pathname === '/'
+      }
+      return pathname.startsWith(route)
+    })
+
+    if (isPublicRoute) {
       return
     }
 
@@ -54,7 +76,7 @@ export default function SessionManager() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  }, [status, router])
+  }, [status, router, pathname])
 
   // 이 컴포넌트는 UI를 렌더링하지 않음
   return null
