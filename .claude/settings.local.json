@@ -24,7 +24,12 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(cmd /c taskkill /F /PID 7184)",
-      "Bash(powershell -Command \"Stop-Process -Id 7184 -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Id 7184 -Force\")",
+      "Bash(tree:*)",
+      "Bash(dir /B /S C:Usershoonjprojectmenualicsrc 2)",
+      "Bash(dir:*)",
+      "Bash(cmd /c taskkill /F /PID 3976)",
+      "Bash(powershell -Command \"Stop-Process -Id 3976 -Force\")"
     ],
     "deny": [],
     "ask": []

@@ -137,22 +137,33 @@ export default function ManualPage() {
 
   // Auto-scroll to newly created block
   useEffect(() => {
-    if (newBlockId) {
-      setTimeout(() => {
-        const blockElement = document.querySelector(`[data-block-id="${newBlockId}"]`)
-        if (blockElement) {
-          blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    if (!newBlockId) return
+
+    const timeoutId = setTimeout(() => {
+      const blockElement = document.querySelector(`[data-block-id="${newBlockId}"]`)
+      if (blockElement) {
+        blockElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+        // Don't auto-focus/click IMAGE blocks - users should manually click the placeholder
+        const blockType = blockElement.getAttribute('data-block-type')
+
+        if (blockType !== 'IMAGE') {
           // Try to focus the block (if it has a focusable element)
-          const focusable = blockElement.querySelector('input, textarea, [contenteditable="true"]')
+          // Exclude file inputs as they should only be opened by explicit user action
+          const focusable = blockElement.querySelector('input:not([type="file"]), textarea, [contenteditable="true"]')
           if (focusable instanceof HTMLElement) {
             focusable.focus()
             focusable.click()
           }
         }
-        setNewBlockId(null)
-      }, 100)
+      }
+      setNewBlockId(null)
+    }, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
     }
-  }, [newBlockId, selectedSection])
+  }, [newBlockId])
 
   const fetchManual = async (keepCurrentSection = false) => {
     try {
@@ -418,9 +429,10 @@ export default function ManualPage() {
       })
 
       setManual({ ...manual, sections: updatedSections })
-      setSelectedSection(
-        updatedSections.find((s) => s.id === selectedSection.id) || selectedSection
-      )
+
+      const newSelectedSection = updatedSections.find((s) => s.id === selectedSection.id) || selectedSection
+
+      setSelectedSection(newSelectedSection)
     }
 
     // Add to pending changes

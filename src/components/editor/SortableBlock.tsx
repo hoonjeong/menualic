@@ -38,11 +38,8 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const [isEditing, setIsEditing] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [localContent, setLocalContent] = useState('')
-  const [shouldSave, setShouldSave] = useState(true)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     // BODY and TABLE blocks store content directly (HTML or JSON string)
@@ -58,53 +55,6 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
     }
   }, [block.content, block.type])
 
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = `${textarea.scrollHeight}px`
-    }
-  }, [])
-
-  useEffect(() => {
-    if (isEditing && block.type === 'BODY') {
-      adjustTextareaHeight()
-    }
-  }, [isEditing, localContent, block.type, adjustTextareaHeight])
-
-  const handleSave = async () => {
-    if (!shouldSave) {
-      setShouldSave(true)
-      return
-    }
-
-    if (block.type === 'HEADING1' || block.type === 'HEADING2' || block.type === 'HEADING3') {
-      await onUpdate(block.id, JSON.stringify({ text: localContent }))
-    } else if (block.type === 'BODY') {
-      await onUpdate(block.id, localContent) // HTML content from RichTextEditor
-    } else if (block.type === 'TABLE') {
-      await onUpdate(block.id, localContent) // JSON stringified table data
-    } else if (block.type === 'IMAGE' || block.type === 'VIDEO') {
-      await onUpdate(block.id, JSON.stringify({ url: localContent }))
-    }
-    setIsEditing(false)
-  }
-
-  const handleCancel = () => {
-    setShouldSave(false)
-    setIsEditing(false)
-    // Reset content to original
-    if (block.type === 'BODY' || block.type === 'TABLE') {
-      setLocalContent(block.content)
-    } else {
-      const parsed = safeJsonParse<{ text?: string; url?: string }>(
-        block.content,
-        { text: '', url: '' }
-      )
-      setLocalContent(parsed.text || parsed.url || '')
-    }
-  }
-
   const handleDelete = async () => {
     await onDelete(block.id)
   }
@@ -116,42 +66,49 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
       const text = content.text || ''
 
       try {
+        const HeadingTag = block.type === 'HEADING1' ? 'h1' : block.type === 'HEADING2' ? 'h2' : 'h3'
 
-        if (isEditing && canEdit) {
-          const HeadingTag = block.type === 'HEADING1' ? 'input' : block.type === 'HEADING2' ? 'input' : 'input'
+        if (!canEdit) {
           return (
-            <input
-              type="text"
-              value={localContent}
-              onChange={(e) => setLocalContent(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  handleSave()
-                } else if (e.key === 'Escape') {
-                  e.preventDefault()
-                  handleCancel()
-                }
-              }}
-              autoFocus
-              className={`w-full px-2 py-1 border-2 border-primary-500 rounded-lg focus:outline-none font-bold ${
+            <HeadingTag
+              className={`px-2 py-1 font-bold ${
                 block.type === 'HEADING1' ? 'text-3xl' : block.type === 'HEADING2' ? 'text-2xl' : 'text-xl'
               }`}
-              placeholder="제목을 입력하세요..."
-            />
+            >
+              {text || ''}
+            </HeadingTag>
           )
         }
 
-        const HeadingTag = block.type === 'HEADING1' ? 'h1' : block.type === 'HEADING2' ? 'h2' : 'h3'
         return (
           <HeadingTag
-            onClick={() => canEdit && setIsEditing(true)}
-            className={`px-2 py-1 font-bold ${
+            contentEditable={canEdit}
+            suppressContentEditableWarning
+            onInput={(e) => {
+              const newText = e.currentTarget.textContent || ''
+              setLocalContent(newText)
+            }}
+            onBlur={async () => {
+              const newText = localContent.trim()
+              if (newText !== text) {
+                await onUpdate(block.id, JSON.stringify({ text: newText }))
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                e.currentTarget.blur()
+              }
+            }}
+            className={`px-2 py-1 font-bold outline-none cursor-text hover:bg-gray-50 rounded-lg focus:bg-gray-50 ${
               block.type === 'HEADING1' ? 'text-3xl' : block.type === 'HEADING2' ? 'text-2xl' : 'text-xl'
-            } ${canEdit ? 'cursor-text hover:bg-gray-50 rounded-lg' : ''}`}
+            }`}
+            data-placeholder="제목을 입력하세요..."
+            style={{
+              minHeight: '1.5em',
+            }}
           >
-            {text || (canEdit ? '제목을 입력하세요...' : '')}
+            {text}
           </HeadingTag>
         )
       } catch {
@@ -206,31 +163,7 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
     // Video block
     if (block.type === 'VIDEO') {
       const content = safeJsonParse<{ url?: string }>(block.content, { url: '' })
-
-      if (isEditing && canEdit) {
-          return (
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={localContent}
-                onChange={(e) => setLocalContent(e.target.value)}
-                onBlur={handleSave}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleSave()
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault()
-                    handleCancel()
-                  }
-                }}
-                autoFocus
-                className="w-full px-4 py-2 text-sm border-2 border-primary-500 rounded-lg focus:outline-none"
-                placeholder="YouTube URL 또는 비디오 URL을 입력하세요..."
-              />
-            </div>
-          )
-        }
+      const videoUrl = content.url && isValidUrl(content.url) ? content.url : ''
 
       const getYouTubeEmbedUrl = (url: string) => {
         const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/
@@ -238,14 +171,52 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
         return match ? `https://www.youtube.com/embed/${match[1]}` : null
       }
 
-      const videoUrl = content.url && isValidUrl(content.url) ? content.url : ''
       const embedUrl = videoUrl ? getYouTubeEmbedUrl(videoUrl) : null
 
+      if (!videoUrl && canEdit) {
+        // Empty state - show editable input
+        return (
+          <div className="w-full">
+            <input
+              type="text"
+              placeholder="YouTube URL 또는 비디오 URL을 입력하세요..."
+              defaultValue=""
+              onBlur={async (e) => {
+                const url = e.target.value.trim()
+                if (url && url !== videoUrl) {
+                  await onUpdate(block.id, JSON.stringify({ url }))
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  e.currentTarget.blur()
+                }
+              }}
+              className="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
+          </div>
+        )
+      }
+
+      if (!videoUrl) {
+        // Read-only empty state
+        return (
+          <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm">영상이 없습니다</p>
+            </div>
+          </div>
+        )
+      }
+
+      // Video is set - show video with editable caption
       return (
-        <div
-          onClick={() => canEdit && setIsEditing(true)}
-          className={`${canEdit ? 'cursor-pointer' : ''}`}
-        >
+        <div className="space-y-2">
           {embedUrl ? (
             <div className="aspect-video">
               <iframe
@@ -255,18 +226,28 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
                 allowFullScreen
               />
             </div>
-          ) : videoUrl ? (
-            <video src={videoUrl} controls className="w-full rounded-lg" />
           ) : (
-            <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-sm">클릭하여 영상 URL 입력</p>
-              </div>
-            </div>
+            <video src={videoUrl} controls className="w-full rounded-lg" />
+          )}
+          {canEdit && (
+            <input
+              type="text"
+              defaultValue={videoUrl}
+              placeholder="YouTube URL 또는 비디오 URL을 입력하세요..."
+              onBlur={async (e) => {
+                const url = e.target.value.trim()
+                if (url !== videoUrl) {
+                  await onUpdate(block.id, JSON.stringify({ url }))
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  e.currentTarget.blur()
+                }
+              }}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+            />
           )}
         </div>
       )
@@ -281,6 +262,7 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
       style={style}
       className="group relative pl-8 pr-10"
       data-block-id={block.id}
+      data-block-type={block.type}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -300,7 +282,7 @@ export function SortableBlock({ block, canEdit, onUpdate, onDelete }: SortableBl
       )}
 
       {/* Delete Button - Absolute positioned on the right inside padding */}
-      {canEdit && isHovered && !isEditing && (
+      {canEdit && isHovered && (
         <div className="absolute right-0 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <button
             onClick={handleDelete}

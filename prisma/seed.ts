@@ -4,6 +4,12 @@ import bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
+  // Prevent running in production
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ Seed script cannot run in production environment!')
+    process.exit(1)
+  }
+
   console.log('Start seeding...')
 
   // Clear existing data

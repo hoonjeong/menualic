@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -17,6 +17,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { SortableBlock } from './SortableBlock'
+import { useParams } from 'next/navigation'
 
 interface Block {
   id: string
@@ -42,10 +43,16 @@ export default function BlockEditor({
   onReorderBlocks,
   onAddBlock,
 }: BlockEditorProps) {
+  const params = useParams()
+  const manualId = params.id as string
+
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [showTableModal, setShowTableModal] = useState(false)
   const [tableRows, setTableRows] = useState(3)
   const [tableCols, setTableCols] = useState(3)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+
+  const imageFileInputRef = useRef<HTMLInputElement>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -97,8 +104,92 @@ export default function BlockEditor({
     await handleAddBlock('TABLE', initialContent)
   }
 
+  const handleImageButtonClick = () => {
+    setShowAddMenu(false)
+    imageFileInputRef.current?.click()
+  }
+
+  const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      return // User cancelled
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('이미지 파일만 업로드할 수 있습니다')
+      return
+    }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일 크기는 10MB를 초과할 수 없습니다')
+      return
+    }
+
+    setIsUploadingImage(true)
+
+    try {
+      // Upload file first
+      const formData = new FormData()
+      formData.append('file', file)
+      if (manualId) {
+        formData.append('manualId', manualId)
+      }
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        let errorMessage = '파일 업로드에 실패했습니다'
+        try {
+          const data = await response.json()
+          errorMessage = data.error || errorMessage
+        } catch {
+          // Failed to parse error response
+        }
+        throw new Error(errorMessage)
+      }
+
+      const data = await response.json()
+
+      // Create image block with uploaded file data
+      const imageContent = JSON.stringify({
+        url: data.file.url,
+        fileId: data.file.id,
+        width: data.file.width,
+        height: data.file.height,
+      })
+
+      await onAddBlock('IMAGE', imageContent)
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert(error instanceof Error ? error.message : '파일 업로드에 실패했습니다')
+    } finally {
+      setIsUploadingImage(false)
+      if (imageFileInputRef.current) {
+        imageFileInputRef.current.value = ''
+      }
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-8 py-4">
+      {/* Hidden file input for image upload */}
+      <input
+        ref={imageFileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageFileSelect}
+        onClick={(e) => {
+          // Reset value to allow selecting the same file again
+          e.currentTarget.value = ''
+        }}
+        className="hidden"
+      />
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         {blocks.length === 0 ? (
           <div className="text-center py-12">
@@ -205,15 +296,18 @@ export default function BlockEditor({
                   </div>
                 </button>
                 <button
-                  onClick={() => handleAddBlock('IMAGE')}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center"
+                  onClick={handleImageButtonClick}
+                  disabled={isUploadingImage}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5 mr-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <div>
-                    <div className="font-medium text-gray-900">이미지</div>
-                    <div className="text-xs text-gray-500">이미지 업로드 또는 URL</div>
+                    <div className="font-medium text-gray-900">
+                      {isUploadingImage ? '업로드 중...' : '이미지'}
+                    </div>
+                    <div className="text-xs text-gray-500">이미지 업로드</div>
                   </div>
                 </button>
                 <button

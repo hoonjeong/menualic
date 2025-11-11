@@ -22,8 +22,6 @@ export default function TableBlock({
   readOnly = false,
 }: TableBlockProps) {
   const [tableData, setTableData] = useState<TableData>({ rows: 2, cols: 2, cells: {} })
-  const [editingCell, setEditingCell] = useState<string | null>(null)
-  const [localValue, setLocalValue] = useState('')
 
   useEffect(() => {
     try {
@@ -49,15 +47,6 @@ export default function TableBlock({
     onChange(JSON.stringify(newTableData))
   }
 
-  const handleCellBlur = () => {
-    if (editingCell) {
-      const [row, col] = editingCell.split('-').map(Number)
-      handleCellChange(row, col, localValue)
-      setEditingCell(null)
-      onBlur?.()
-    }
-  }
-
   const addRow = () => {
     const newTableData = {
       ...tableData,
@@ -81,13 +70,6 @@ export default function TableBlock({
     return tableData.cells[key] || ''
   }
 
-  const startEditing = (row: number, col: number) => {
-    if (readOnly) return
-    const key = `${row}-${col}`
-    setEditingCell(key)
-    setLocalValue(getCellValue(row, col))
-  }
-
   return (
     <div className="overflow-x-auto">
       <div className="inline-block min-w-full">
@@ -96,8 +78,6 @@ export default function TableBlock({
             {Array.from({ length: tableData.rows }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {Array.from({ length: tableData.cols }).map((_, colIndex) => {
-                  const key = `${rowIndex}-${colIndex}`
-                  const isEditing = editingCell === key
                   const cellValue = getCellValue(rowIndex, colIndex)
 
                   return (
@@ -105,34 +85,29 @@ export default function TableBlock({
                       key={colIndex}
                       className="border border-gray-300 min-w-[120px] h-[40px]"
                     >
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={localValue}
-                          onChange={(e) => setLocalValue(e.target.value)}
-                          onBlur={handleCellBlur}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault()
-                              handleCellBlur()
-                            } else if (e.key === 'Escape') {
-                              e.preventDefault()
-                              setEditingCell(null)
-                            }
-                          }}
-                          autoFocus
-                          className="w-full h-full px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        />
-                      ) : (
-                        <div
-                          onClick={() => startEditing(rowIndex, colIndex)}
-                          className={`w-full h-full px-2 py-1 ${
-                            readOnly ? '' : 'cursor-text hover:bg-gray-50'
-                          }`}
-                        >
-                          {cellValue || (readOnly ? '' : ' ')}
-                        </div>
-                      )}
+                      <div
+                        contentEditable={!readOnly}
+                        suppressContentEditableWarning
+                        onInput={(e) => {
+                          const value = e.currentTarget.textContent || ''
+                          handleCellChange(rowIndex, colIndex, value)
+                        }}
+                        onBlur={() => {
+                          onBlur?.()
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            e.currentTarget.blur()
+                          }
+                        }}
+                        className={`w-full h-full px-2 py-1 outline-none ${
+                          readOnly ? '' : 'cursor-text hover:bg-gray-50 focus:bg-gray-50'
+                        }`}
+                        style={{ minHeight: '40px' }}
+                      >
+                        {cellValue}
+                      </div>
                     </td>
                   )
                 })}

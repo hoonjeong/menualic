@@ -19,6 +19,14 @@
   }
 }
 
+/* ContentEditable placeholder styles */
+[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  position: absolute;
+}
+
 /* Print Styles */
 @media print {
   /* Show print-only elements */

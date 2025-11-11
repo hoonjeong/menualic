@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { randomUUID } from 'crypto'
+import sharp from 'sharp'
 
 const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE || '10485760', 10) // 10MB default
 const ALLOWED_TYPES = (process.env.ALLOWED_FILE_TYPES || 'image/jpeg,image/jpg,image/png,image/gif,image/webp').split(',')
@@ -101,9 +102,18 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Get image dimensions (using basic approach without sharp for now)
+    // Get image dimensions using sharp
     let width: number | undefined
     let height: number | undefined
+
+    try {
+      const metadata = await sharp(buffer).metadata()
+      width = metadata.width
+      height = metadata.height
+    } catch (error) {
+      console.error('Failed to get image metadata:', error)
+      // Continue without dimensions if sharp fails
+    }
 
     // Save file to disk
     await writeFile(filePath, buffer)

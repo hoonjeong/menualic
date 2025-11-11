@@ -60,36 +60,42 @@ export default function SessionManager() {
     // rememberMe 상태 확인
     const rememberMe = getRememberMe()
 
+    // 먼저 sessionStorage에 활성 표시 (타이밍 문제 방지)
+    sessionStorage.setItem('sessionActive', 'true')
+
     if (!rememberMe) {
       // 로그인 상태 유지가 비활성화된 경우
-      // sessionStorage를 사용하여 브라우저 세션 동안만 유효하도록 설정
-      const sessionActive = sessionStorage.getItem('sessionActive')
+      // 새 탭에서 열었는지 확인하기 위해 localStorage 사용
+      const wasLoggedIn = localStorage.getItem('wasLoggedIn')
 
-      if (!sessionActive) {
-        // sessionStorage가 없으면 브라우저를 새로 열었다는 의미
-        // 자동 로그아웃 처리
-        handleLogout({ callbackUrl: '/login' })
-      } else {
-        // sessionStorage에 활성 표시
-        sessionStorage.setItem('sessionActive', 'true')
+      if (!wasLoggedIn) {
+        // 첫 로그인 시 플래그 설정
+        localStorage.setItem('wasLoggedIn', 'true')
       }
-    } else {
-      // rememberMe가 true인 경우 sessionStorage에 활성 표시
-      sessionStorage.setItem('sessionActive', 'true')
     }
 
     // 브라우저 종료 감지를 위한 이벤트 리스너
+    // rememberMe가 false일 때만 브라우저 종료 시 로그아웃
     const handleBeforeUnload = () => {
       if (!getRememberMe()) {
-        // 로그인 상태 유지가 비활성화된 경우 sessionStorage 삭제
-        sessionStorage.removeItem('sessionActive')
+        // 브라우저 종료 시 localStorage 플래그 삭제
+        localStorage.removeItem('wasLoggedIn')
+      }
+    }
+
+    // pagehide 이벤트도 함께 사용 (모바일 대응)
+    const handlePageHide = () => {
+      if (!getRememberMe()) {
+        localStorage.removeItem('wasLoggedIn')
       }
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
+    window.addEventListener('pagehide', handlePageHide)
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
+      window.removeEventListener('pagehide', handlePageHide)
     }
   }, [status, router, currentPath])
 

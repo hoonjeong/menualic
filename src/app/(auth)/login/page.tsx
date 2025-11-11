@@ -70,6 +70,9 @@ export default function LoginPage() {
         // 로그인 상태 유지 처리
         setRememberMe(rememberMeChecked)
 
+        // sessionActive 설정 (SessionManager가 이를 확인함)
+        sessionStorage.setItem('sessionActive', 'true')
+
         toast.success('로그인 성공!')
         router.push('/dashboard')
         router.refresh()

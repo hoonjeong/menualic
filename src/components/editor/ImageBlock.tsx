@@ -29,20 +29,17 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
   const params = useParams()
   const manualId = params.id as string
 
-  const [content, setContent] = useState<ImageContent>(() =>
-    safeJsonParse<ImageContent>(block.content, {})
-  )
+  // Parse content directly from block.content instead of using state
+  const content = safeJsonParse<ImageContent>(block.content, {})
+
   const [isSelected, setIsSelected] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isResizing, setIsResizing] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const resizeStartRef = useRef({ x: 0, y: 0, width: 0, height: 0 })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setContent(safeJsonParse<ImageContent>(block.content, {}))
-  }, [block.content])
 
   // Handle keyboard delete
   useEffect(() => {
@@ -73,10 +70,7 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
     }
   }, [isSelected])
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const uploadFile = async (file: File) => {
     // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('이미지 파일만 업로드할 수 있습니다')
@@ -123,17 +117,53 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
         height: data.file.height,
       }
 
-      setContent(newContent)
+      setIsUploading(false)
       await onUpdate(block.id, JSON.stringify(newContent))
     } catch (error) {
       console.error('Upload error:', error)
       alert(error instanceof Error ? error.message : '파일 업로드에 실패했습니다')
-    } finally {
       setIsUploading(false)
+    } finally {
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    await uploadFile(file)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    if (!canEdit) return
+
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      await uploadFile(file)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (canEdit && !content.url) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
   }
 
   const handleResizeStart = (e: React.MouseEvent, direction: 'right' | 'bottom' | 'corner') => {
@@ -189,7 +219,6 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
           width: Math.round(rect.width),
           height: Math.round(rect.height),
         }
-        setContent(newContent)
         await onUpdate(block.id, JSON.stringify(newContent))
       }
     }
@@ -213,18 +242,25 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
   return (
     <div
       ref={containerRef}
-      className="relative inline-block max-w-full"
+      className="relative w-full"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
     >
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
+        onClick={(e) => {
+          // Reset value to allow selecting the same file again
+          e.currentTarget.value = ''
+        }}
         className="hidden"
       />
 
       {isUploading && (
-        <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
+        <div className="flex items-center justify-center p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
             <p className="text-sm text-gray-600">업로드 중...</p>
@@ -233,18 +269,10 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
       )}
 
       {!isUploading && !imageUrl && (
-        <div
-          onClick={canEdit ? handleUploadClick : undefined}
-          className={`w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center ${
-            canEdit ? 'cursor-pointer hover:bg-gray-200' : ''
-          }`}
-        >
-          <div className="text-center text-gray-500">
-            <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p className="text-sm">클릭하여 이미지 업로드</p>
-          </div>
+        <div className="w-full py-4 px-4 rounded-lg border-2 border-gray-200 bg-gray-50">
+          <p className="text-sm text-gray-500 text-center">
+            이미지를 불러오는 중...
+          </p>
         </div>
       )}
 
@@ -259,7 +287,7 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
             }`}
             style={{
               width: content.width ? `${content.width}px` : undefined,
-              height: content.height ? `${content.height}px` : undefined,
+              height: 'auto',
               maxWidth: '100%',
               userSelect: 'none',
             }}
@@ -269,7 +297,39 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
             }}
           />
 
-          {/* Resize handles */}
+          {/* Toolbar - shows on hover or when selected */}
+          {canEdit && (isSelected || undefined) && (
+            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleUploadClick()
+                }}
+                className="px-3 py-1.5 bg-white rounded-lg shadow-md text-xs font-medium text-gray-700 hover:bg-gray-100 border border-gray-200"
+                title="이미지 변경"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (confirm('이미지를 삭제하시겠습니까?')) {
+                    onDelete(block.id)
+                  }
+                }}
+                className="px-3 py-1.5 bg-white rounded-lg shadow-md text-xs font-medium text-red-600 hover:bg-red-50 border border-gray-200"
+                title="이미지 삭제"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Resize handles - only show when selected */}
           {canEdit && isSelected && !isResizing && (
             <>
               {/* Right handle */}
@@ -292,24 +352,12 @@ export default function ImageBlock({ block, canEdit, onUpdate, onDelete }: Image
                 className="absolute bottom-0 right-0 w-4 h-4 bg-primary-500 rounded-full cursor-nwse-resize opacity-0 hover:opacity-100 transition-opacity"
                 style={{ transform: 'translate(50%, 50%)' }}
               />
+
+              {/* Selection hint */}
+              <div className="absolute bottom-2 left-2 px-3 py-1.5 bg-black bg-opacity-75 text-white text-xs rounded-lg">
+                Delete 키로 삭제 | 가장자리를 드래그하여 크기 조절
+              </div>
             </>
-          )}
-
-          {/* Change image button */}
-          {canEdit && isSelected && (
-            <button
-              onClick={handleUploadClick}
-              className="absolute top-2 right-2 px-3 py-1 bg-white rounded shadow-md text-xs font-medium text-gray-700 hover:bg-gray-100"
-            >
-              이미지 변경
-            </button>
-          )}
-
-          {/* Selection hint */}
-          {canEdit && isSelected && (
-            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black bg-opacity-75 text-white text-xs rounded">
-              Delete 키로 삭제 | 가장자리를 드래그하여 크기 조절
-            </div>
           )}
         </div>
       )}
